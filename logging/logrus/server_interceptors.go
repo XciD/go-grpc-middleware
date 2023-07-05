@@ -28,6 +28,8 @@ func UnaryServerInterceptor(entry *logrus.Entry, opts ...Option) grpc.UnaryServe
 		startTime := time.Now()
 		newCtx := newLoggerForCall(ctx, entry, info.FullMethod, startTime, o.timestampFormat)
 
+		o.messageFunc(newCtx, "start unary call", logrus.DebugLevel, 0, nil, logrus.Fields{})
+
 		resp, err := handler(newCtx, req)
 
 		if !o.shouldLog(info.FullMethod, err) {
@@ -57,6 +59,7 @@ func StreamServerInterceptor(entry *logrus.Entry, opts ...Option) grpc.StreamSer
 		newCtx := newLoggerForCall(stream.Context(), entry, info.FullMethod, startTime, o.timestampFormat)
 		wrapped := grpc_middleware.WrapServerStream(stream)
 		wrapped.WrappedContext = newCtx
+		o.messageFunc(newCtx, "start streaming call", logrus.DebugLevel, 0, nil, logrus.Fields{})
 
 		err := handler(srv, wrapped)
 
